@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BEXIHATOOR!😠</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+
+    h2, h3 {
+      color: #333;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      padding: 10px 16px;
+      margin-top: 15px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .nested {
+      margin-top: 10px;
+    }
+
+    #responseOutput {
+      background: #272822;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      margin-top: 20px;
+    }
+
+    #templateEditor {
+      margin-top: 30px;
+    }
+
+    .collapsible {
+      background-color: #eee;
+      color: #444;
+      cursor: pointer;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 1em;
+      margin-top: 30px;
+      border-radius: 6px;
+    }
+
+    .collapsible:after {
+      content: '▼';
+      float: right;
+    }
+
+    .collapsible.active:after {
+      content: '▲';
+    }
+
+    .content {
+      padding: 0 15px;
+      display: none;
+      overflow: hidden;
+      background-color: #f9f9f9;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>BEXIHATOOR!😠</h2>
+
+  <!-- Payload Templates -->
+  <fieldset>
+    <legend>Payload Templates</legend>
+    <label>Choose Template:
+      <select id="templateSelector">
+        <option value="">-- None --</option>
+      </select>
+    </label>
+    <button onclick="openTemplateEditor()">Edit Templates</button>
+  </fieldset>
+
+  <!-- Form -->
+  <form id="postForm">
+    <fieldset>
+      <legend>Task Data</legend>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        
+        <!-- Left Column -->
+        <div style="flex: 1 1 45%;">
+          <div class="form-group">
+            <label>User ID:</label>
+            <input type="number" id="user_id" required>
+          </div>
+
+          <div class="form-group">
+            <label>Status ID:</label>
+            <input type="number" id="status_id" required>
+          </div>
+
+          <div class="form-group">
+            <label>Client Service ID:</label>
+            <input type="number" id="client_service_id" required>
+          </div>
+
+          <div class="form-group">
+            <label>Text:</label>
+            <textarea id="text" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Allowable Bill:</label>
+            <select id="allowable_bill">
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Contact ID:</label>
+            <input type="number" id="contact_id" required>
+          </div>
+
+          <div class="form-group">
+            <label>Project ID:</label>
+            <input type="number" id="pr_project_id" required>
+          </div>
+
+          <div class="form-group">
+            <label>Package ID:</label>
+            <input type="number" id="pr_package_id" required>
+          </div>
+        </div>
+
+        <!-- Right Column (Tracking) -->
+        <div style="flex: 1 1 45%;">
+          <fieldset class="nested">
+            <legend>Tracking</legend>
+
+            <div class="form-group">
+              <label>Type:</label>
+              <select id="tracking_type">
+                <option value="duration">duration</option>
+                <option value="range">range</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Date:</label>
+              <input type="date" id="tracking_date" required>
+            </div>
+
+            <div class="form-group">
+              <label>Duration (hh:mm):</label>
+              <input type="text" id="tracking_duration" value="01:00" required>
+            </div>
+          </fieldset>
+        </div>
+
+      </div>
+
+      <button type="submit">Send Request</button>
+    </fieldset>
+  </form>
+
+  <pre id="responseOutput"></pre>
+
+  <!-- Template Editor Modal -->
+  <div id="templateEditor" style="display:none;">
+    <h3>Edit Templates</h3>
+    <textarea id="templateInput" rows="10" cols="80" placeholder='Enter JSON template list...'></textarea><br>
+    <button onclick="saveTemplates()">Save Templates</button>
+    <button onclick="closeTemplateEditor()">Cancel</button>
+  </div>
+
+  <!-- API Configuration (Collapsible) -->
+  <button type="button" class="collapsible">API Configuration</button>
+  <div class="content">
+    <label>API URL:</label>
+    <input type="text" id="api_url">
+
+    <label>Bearer Token:</label>
+    <input type="text" id="api_token">
+  </div>
+
+  <script>
+    const formFields = [
+      'user_id', 'status_id', 'client_service_id', 'text',
+      'allowable_bill', 'contact_id', 'pr_project_id', 'pr_package_id',
+      'tracking_type', 'tracking_duration' // tracking_date is excluded from override
+    ];
+
+    function init() {
+      loadStoredConfig();
+      loadTemplates();
+      initCollapsibles();
+      // Always set today's date in the tracking date field
+      document.getElementById('tracking_date').valueAsDate = new Date();
+    }
+
+    function loadStoredConfig() {
+      document.getElementById('api_url').value = localStorage.getItem('api_url') || '';
+      document.getElementById('api_token').value = localStorage.getItem('api_token') || '';
+    }
+
+    function saveStoredConfig() {
+      localStorage.setItem('api_url', document.getElementById('api_url').value);
+      localStorage.setItem('api_token', document.getElementById('api_token').value);
+    }
+
+    function loadTemplates() {
+      const templates = JSON.parse(localStorage.getItem('payload_templates') || '[]');
+      const selector = document.getElementById('templateSelector');
+      selector.innerHTML = '<option value="">-- None --</option>';
+      templates.forEach((tpl, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = tpl.name;
+        selector.appendChild(opt);
+      });
+    }
+
+    function openTemplateEditor() {
+      const templates = JSON.parse(localStorage.getItem('payload_templates') || '[]');
+      document.getElementById('templateInput').value = JSON.stringify(templates, null, 2);
+      document.getElementById('templateEditor').style.display = 'block';
+    }
+
+    function closeTemplateEditor() {
+      document.getElementById('templateEditor').style.display = 'none';
+    }
+
+    function saveTemplates() {
+      try {
+        const val = document.getElementById('templateInput').value;
+        const parsed = JSON.parse(val);
+        if (!Array.isArray(parsed)) throw 'Not an array';
+        localStorage.setItem('payload_templates', val);
+        loadTemplates();
+        closeTemplateEditor();
+      } catch (e) {
+        alert('Invalid JSON: ' + e);
+      }
+    }
+
+    document.getElementById('templateSelector').addEventListener('change', function() {
+      const index = this.value;
+      if (!index) return;
+      const templates = JSON.parse(localStorage.getItem('payload_templates') || '[]');
+      const tpl = templates[parseInt(index)];
+      if (!tpl || !tpl.payload) return;
+      const p = tpl.payload;
+
+      document.getElementById('user_id').value = p.user_id || '';
+      document.getElementById('status_id').value = p.status_id || '';
+      document.getElementById('client_service_id').value = p.client_service_id || '';
+      document.getElementById('text').value = p.text || '';
+      document.getElementById('allowable_bill').value = p.allowable_bill ? 'true' : 'false';
+      document.getElementById('contact_id').value = p.contact_id || '';
+      document.getElementById('pr_project_id').value = p.pr_project_id || '';
+      document.getElementById('pr_package_id').value = p.pr_package_id || '';
+
+      const t = p.tracking || {};
+      document.getElementById('tracking_type').value = t.type || 'duration';
+      document.getElementById('tracking_duration').value = t.duration || '';
+      // DO NOT override tracking_date
+    });
+
+    document.getElementById('postForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      saveStoredConfig();
+
+      const data = {
+        user_id: parseInt(document.getElementById('user_id').value),
+        status_id: parseInt(document.getElementById('status_id').value),
+        client_service_id: parseInt(document.getElementById('client_service_id').value),
+        text: document.getElementById('text').value,
+        allowable_bill: document.getElementById('allowable_bill').value === 'true',
+        contact_id: parseInt(document.getElementById('contact_id').value),
+        pr_project_id: parseInt(document.getElementById('pr_project_id').value),
+        pr_package_id: parseInt(document.getElementById('pr_package_id').value),
+        tracking: {
+          type: document.getElementById('tracking_type').value,
+          date: document.getElementById('tracking_date').value,
+          duration: document.getElementById('tracking_duration').value
+        }
+      };
+
+      const url = document.getElementById('api_url').value;
+      const token = document.getElementById('api_token').value;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        document.getElementById('responseOutput').textContent = JSON.stringify(result, null, 2);
+      })
+      .catch(error => {
+        document.getElementById('responseOutput').textContent = 'Error: ' + error;
+      });
+    });
+
+    function initCollapsibles() {
+      const coll = document.getElementsByClassName("collapsible");
+      for (let i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function () {
+          this.classList.toggle("active");
+          const content = this.nextElementSibling;
+          content.style.display = content.style.display === "block" ? "none" : "block";
+        });
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
